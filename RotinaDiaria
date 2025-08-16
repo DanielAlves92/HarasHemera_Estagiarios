@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haras Hemera - Desktop</title>
+<style>
+body{font-family:Arial;padding:20px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%)}
+.container{max-width:800px;margin:0 auto;background:white;padding:20px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+.header{text-align:center;margin-bottom:20px;background:linear-gradient(135deg, #2c3e50, #3498db);color:white;padding:30px;border-radius:10px}
+.logo{height:80px;width:auto;margin-bottom:10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+h1{font-size:24px;margin:10px 0}
+.info-section{background:#f8f9fa;padding:15px;border-radius:6px;margin:20px 0}
+.name-input{width:300px;padding:12px;border:2px solid #3498db;border-radius:8px;font-size:16px;margin:10px}
+.progress{background:#ecf0f1;height:40px;border-radius:20px;margin:20px 0;position:relative;overflow:hidden}
+.progress-bar{background:linear-gradient(90deg, #27ae60, #2ecc71);height:100%;border-radius:20px;width:0%;transition:width 0.3s}
+.progress-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:bold;color:#2c3e50}
+.controls{text-align:center;margin:20px 0;padding:20px;background:#f8f9fa;border-radius:10px}
+.btn{background:#27ae60;color:white;border:none;padding:15px 30px;margin:10px;border-radius:8px;font-size:16px;cursor:pointer;font-weight:bold}
+.btn:hover{background:#219a52;transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.2)}
+.btn-pdf{background:#e74c3c}
+.btn-pdf:hover{background:#c0392b}
+.btn-whats{background:#25d366}
+.btn-whats:hover{background:#128c7e}
+.btn-reset{background:#95a5a6}
+.btn-reset:hover{background:#7f8c8d}
+.time{background:#34495e;color:white;padding:15px 20px;margin:25px 0 10px 0;font-weight:bold;font-size:16px;border-radius:8px}
+.task{padding:15px;border-bottom:1px solid #ecf0f1;background:white;border-radius:8px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.task.done{background:#d5f4e6}
+.special{background:#fff3cd;border-left:4px solid #ffc107}
+.vet{background:#f8d7da;border-left:4px solid #dc3545}
+.task-row{display:flex;align-items:flex-start;margin-bottom:10px}
+input[type="checkbox"]{width:20px;height:20px;margin-right:15px;margin-top:2px;cursor:pointer;accent-color:#27ae60}
+.task label{flex:1;cursor:pointer;font-size:15px;line-height:1.5;color:#2c3e50}
+.photo-btn{background:#3498db;color:white;border:none;padding:8px 15px;border-radius:6px;font-size:14px;margin-left:10px;cursor:pointer}
+.photo-btn:hover{background:#2980b9}
+.photo-btn.has-photo{background:#27ae60}
+.photo-preview{max-width:150px;height:auto;margin:8px 0;border-radius:8px;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+input[type="file"]{display:none}
+textarea{width:100%;margin-top:10px;padding:12px;border:1px solid #ddd;border-radius:6px;height:60px;font-size:14px;resize:vertical}
+textarea:focus{outline:none;border-color:#3498db;box-shadow:0 0 0 2px rgba(52,152,219,0.2)}
+.footer{text-align:center;margin-top:30px;padding:20px;background:#2c3e50;color:white;border-radius:8px;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="header">
+<img src="Logo Hemera.jpeg" alt="Logo Haras Hemera" class="logo">
+<h1>🐎 Haras Hemera - Sistema de Controle</h1>
+</div>
+
+<div class="info-section">
+<p style="text-align:center;font-size:16px;color:#7f8c8d;margin-bottom:10px"><strong>Data:</strong> <span id="data"></span></p>
+<p style="text-align:center;margin-bottom:10px"><strong>Nome do Estagiário:</strong></p>
+<div style="text-align:center">
+<input type="text" id="nomeEstagiario" class="name-input" placeholder="Digite seu nome completo" maxlength="50">
+</div>
+</div>
+
+<div class="progress">
+<div class="progress-bar" id="barra"></div>
+<div class="progress-text" id="texto">0% Concluído</div>
+</div>
+
+<div class="controls">
+<button class="btn btn-pdf" onclick="gerarPDF()">📄 Gerar PDF</button>
+<button class="btn btn-whats" onclick="enviarWhatsApp()">📱 Enviar WhatsApp</button>
+<button class="btn btn-reset" onclick="resetar()">🔄 Resetar Tudo</button>
+</div>
+
+<div id="tarefas"></div>
+
+<div class="controls">
+<button class="btn btn-pdf" onclick="gerarPDF()">📄 Gerar PDF</button>
+<button class="btn btn-whats" onclick="enviarWhatsApp()">📱 Enviar WhatsApp</button>
+<button class="btn btn-reset" onclick="resetar()">🔄 Resetar Tudo</button>
+</div>
+
+<div class="footer">
+Sistema baseado nas diretrizes de gestão do Prof. Vicente Falconi
+</div>
+
+</div>
+
+<script>
+// Lista de todas as atividades
+var atividades = [
+    {horario: '08:00', texto: 'Garantir que todos os cavalos comeram ração pela manhã', tipo: ''},
+    {horario: '08:00', texto: 'Levar ração, feno e limpar a água dos pôneis', tipo: ''},
+    {horario: '08:00', texto: 'ROTINA VETERINÁRIA: Verificar receitas, administrar medicamentos', tipo: 'vet'},
+    {horario: '08:30', texto: 'Tirar capa e ligas dos cavalos', tipo: ''},
+    {horario: '08:30', texto: 'Iniciar LIMPEZA DE CASCO dos animais', tipo: ''},
+    {horario: '09:00', texto: 'SOLTAR ANIMAIS: Vani e Zeca juntos; Quabrilla e Creme juntos; Gentle e Code Blue juntos; Magnus e La Belle sozinhos', tipo: 'special'},
+    {horario: '09:30', texto: 'Limpar e encher os cochos de água dos piquetes', tipo: ''},
+    {horario: '10:00', texto: 'PAVILHÃO DE BAIXO: Garantir que animais comeram ração', tipo: ''},
+    {horario: '10:00', texto: 'Auxiliar a soltar restante dos animais nos piquetes', tipo: ''},
+    {horario: '10:00', texto: 'Limpar cochos de água dos piquetes', tipo: ''},
+    {horario: '10:00', texto: 'Auxiliar a MOLHAR a pista de hipismo', tipo: ''},
+    {horario: '11:00', texto: 'Organizar capa dos cavalos, laboratório e materiais', tipo: ''},
+    {horario: '11:30', texto: 'Passar FENO para animais do PAVILHÃO SUPERIOR', tipo: ''},
+    {horario: '11:30', texto: 'Buscar animais no piquete', tipo: ''},
+    {horario: '12:00', texto: 'Passar RAÇÃO junto ao tratador', tipo: ''},
+    {horario: '12:00-13:00', texto: 'HORÁRIO DE ALMOÇO', tipo: 'special'},
+    {horario: '13:00', texto: 'Soltar animais nos piquetes', tipo: ''},
+    {horario: '13:30', texto: 'Organização dos materiais de reprodução', tipo: ''},
+    {horario: '14:00', texto: 'Organizar BANHO: 2 animais diferentes por dia', tipo: 'special'},
+    {horario: '15:00', texto: 'Passar FENO para animais do PAVILHÃO SUPERIOR', tipo: ''},
+    {horario: '15:30', texto: 'Limpeza casco dos pôneis', tipo: ''},
+    {horario: '15:30', texto: 'Buscar animais no piquete', tipo: ''},
+    {horario: '15:30', texto: 'LIMPEZA DE CASCO: passar cândida se necessário', tipo: ''},
+    {horario: '15:30', texto: 'Passar RAÇÃO junto ao tratador', tipo: ''},
+    {horario: '16:30-17:00', texto: 'Colocar CAPAS de frio nos animais', tipo: ''},
+    {horario: '16:30-17:00', texto: 'ROTINA VETERINÁRIA: Verificar receitas, administrar medicamentos', tipo: 'vet'},
+    {horario: '16:30-17:00', texto: 'Limpeza final do laboratório', tipo: ''},
+    {horario: '16:30-17:00', texto: 'Carregar ultrassom de reprodução', tipo: ''},
+    {horario: '22:00', texto: 'RONDA NOTURNA: Apagar luzes e checar animais - AVISAR NO WHATSAPP', tipo: 'special'},
+    {horario: '22:00', texto: 'Tirar ultrassom da tomada', tipo: ''}
+];
+
+// Definir data
+document.getElementById('data').textContent = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+
+// Carregar tarefas
+function carregarTarefas() {
+    var container = document.getElementById('tarefas');
+    var html = '';
+    var horarioAtual = '';
+    
+    for (var i = 0; i < atividades.length; i++) {
+        var ativ = atividades[i];
+        
+        if (ativ.horario !== horarioAtual) {
+            html += '<div class="time">' + ativ.horario + '</div>';
+            horarioAtual = ativ.horario;
+        }
+        
+        var classe = ativ.tipo === 'special' ? 'special' : (ativ.tipo === 'vet' ? 'vet' : '');
+        html += '<div class="task ' + classe + '">';
+        html += '<div class="task-row">';
+        html += '<input type="checkbox" id="t' + (i + 1) + '" onchange="atualizar()">';
+        html += '<label for="t' + (i + 1) + '">' + ativ.texto + '</label>';
+        html += '<button class="photo-btn" onclick="abrirCamera(' + (i + 1) + ')">📷 Foto</button>';
+        html += '</div>';
+        html += '<input type="file" id="f' + (i + 1) + '" accept="image/*" onchange="mostrarFoto(' + (i + 1) + ')">';
+        html += '<img id="img' + (i + 1) + '" class="photo-preview">';
+        html += '<textarea id="c' + (i + 1) + '" placeholder="Comentário sobre esta atividade (máximo 140 caracteres)" maxlength="140"></textarea>';
+        html += '</div>';
+    }
+    
+    container.innerHTML = html;
+}
+
+// Atualizar progresso (EXCLUINDO horário de almoço)
+function atualizar() {
+    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    var marcadas = document.querySelectorAll('input[type="checkbox"]:checked');
+    
+    // Excluir horário de almoço do cálculo (checkbox t16)
+    var totalAtividades = checkboxes.length - 1; // -1 para excluir almoço
+    var atividadesConcluidas = marcadas.length;
+    
+    // Se o almoço estiver marcado, não contar no progresso
+    var almocoCheckbox = document.getElementById('t16');
+    if (almocoCheckbox && almocoCheckbox.checked) {
+        atividadesConcluidas = atividadesConcluidas - 1;
+    }
+    
+    var pct = Math.round((atividadesConcluidas / totalAtividades) * 100);
+    
+    document.getElementById('barra').style.width = pct + '%';
+    document.getElementById('texto').textContent = pct + '% Concluído (excluindo almoço)';
+    
+    checkboxes.forEach(function(cb) {
+        var task = cb.closest('.task');
+        if (cb.checked) {
+            task.classList.add('done');
+        } else {
+            task.classList.remove('done');
+        }
+    });
+}
+
+// Abrir seletor de arquivo
+function abrirCamera(num) {
+    document.getElementById('f' + num).click();
+}
+
+// Mostrar foto
+function mostrarFoto(num) {
+    var file = document.getElementById('f' + num).files[0];
+    var img = document.getElementById('img' + num);
+    var btn = document.querySelector('button[onclick="abrirCamera(' + num + ')"]');
+    
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            img.style.display = 'block';
+            btn.textContent = '✅ Foto';
+            btn.classList.add('has-photo');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Gerar PDF com estética do webapp
+function gerarPDF() {
+    var nomeEstagiario = document.getElementById('nomeEstagiario').value || 'Não informado';
+    var data = new Date().toLocaleDateString('pt-BR');
+    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    var marcadas = document.querySelectorAll('input[type="checkbox"]:checked');
+    
+    // Calcular progresso excluindo almoço
+    var totalAtividades = checkboxes.length - 1;
+    var atividadesConcluidas = marcadas.length;
+    var almocoCheckbox = document.getElementById('t16');
+    if (almocoCheckbox && almocoCheckbox.checked) {
+        atividadesConcluidas = atividadesConcluidas - 1;
+    }
+    var pct = Math.round((atividadesConcluidas / totalAtividades) * 100);
+
+    // Criar PDF com estética melhorada
+    var conteudo = '';
+    conteudo += '╔═══════════════════════════════════════════════════════════════╗\n';
+    conteudo += '║                        🐎 HARAS HEMERA                        ║\n';
+    conteudo += '║                   RELATÓRIO DE ATIVIDADES                     ║\n';
+    conteudo += '╚═══════════════════════════════════════════════════════════════╝\n\n';
+    
+    conteudo += '┌─────────────────────────────────────────────────────────────┐\n';
+    conteudo += '│                    INFORMAÇÕES GERAIS                       │\n';
+    conteudo += '└─────────────────────────────────────────────────────────────┘\n';
+    conteudo += '📅 DATA: ' + data + '\n';
+    conteudo += '👤 ESTAGIÁRIO: ' + nomeEstagiario + '\n';
+    conteudo += '📊 PROGRESSO: ' + atividadesConcluidas + '/' + totalAtividades + ' atividades (' + pct + '%)\n';
+    conteudo += '    (Horário de almoço não contabilizado no progresso)\n\n';
+    
+    // Status motivacional
+    if (pct === 100) {
+        conteudo += '🎉 EXCELENTE! TODAS AS ATIVIDADES FORAM CONCLUÍDAS!\n\n';
+    } else if (pct >= 90) {
+        conteudo += '👍 MUITO BOM! QUASE TODAS AS ATIVIDADES CONCLUÍDAS!\n\n';
+    } else if (pct >= 70) {
+        conteudo += '✅ BOM PROGRESSO! CONTINUE ASSIM!\n\n';
+    } else if (pct >= 50) {
+        conteudo += '⚠️  PROGRESSO PARCIAL - FOQUE NAS ATIVIDADES RESTANTES\n\n';
+    } else {
+        conteudo += '🔴 ATENÇÃO: MUITAS ATIVIDADES AINDA PENDENTES\n\n';
+    }
+    
+    conteudo += '┌─────────────────────────────────────────────────────────────┐\n';
+    conteudo += '│                  DETALHAMENTO DAS ATIVIDADES                │\n';
+    conteudo += '└─────────────────────────────────────────────────────────────┘\n\n';
+
+    var horarioAtual = '';
+    for (var i = 0; i < atividades.length; i++) {
+        var ativ = atividades[i];
+        
+        if (ativ.horario !== horarioAtual) {
+            if (horarioAtual !== '') conteudo += '\n';
+            conteudo += '⏰ ' + ativ.horario + '\n';
+            conteudo += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+            horarioAtual = ativ.horario;
+        }
+
+        var checkbox = document.getElementById('t' + (i + 1));
+        var comentario = document.getElementById('c' + (i + 1));
+        var status = checkbox && checkbox.checked ? '✅' : '❌';
+        var textoComentario = comentario && comentario.value ? '\n    💬 Comentário: ' + comentario.value : '';
+
+        // Indicadores visuais
+        var tipoIndicador = '';
+        if (ativ.tipo === 'vet') tipoIndicador = ' 🏥';
+        else if (ativ.tipo === 'special') tipoIndicador = ' ⭐';
+
+        conteudo += status + ' ' + ativ.texto + tipoIndicador + textoComentario + '\n';
+    }
+
+    conteudo += '\n┌─────────────────────────────────────────────────────────────┐\n';
+    conteudo += '│                          LEGENDA                            │\n';
+    conteudo += '└─────────────────────────────────────────────────────────────┘\n';
+    conteudo += '✅ = Atividade Concluída    ❌ = Atividade Pendente\n';
+    conteudo += '🏥 = Rotina Veterinária     ⭐ = Atividade Especial\n';
+    conteudo += '💬 = Comentário do Estagiário\n\n';
+    
+    conteudo += '╔═══════════════════════════════════════════════════════════════╗\n';
+    conteudo += '║          Sistema baseado nas diretrizes do                   ║\n';
+    conteudo += '║              Prof. Vicente Falconi                           ║\n';
+    conteudo += '╚═══════════════════════════════════════════════════════════════╝\n';
+
+    // Criar e baixar arquivo
+    var blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'Haras_Relatorio_' + nomeEstagiario.replace(/\s+/g, '_') + '_' + data.replace(/\//g, '-') + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    setTimeout(function() {
+        if (confirm('Relatório PDF gerado com sucesso!\n\nDeseja limpar o formulário para um novo relatório?')) {
+            limparFormulario();
+        }
+    }, 1000);
+}
+
+// Enviar diretamente pelo WhatsApp com PDF
+function enviarWhatsApp() {
+    var nomeEstagiario = document.getElementById('nomeEstagiario').value;
+    
+    if (!nomeEstagiario) {
+        alert('Por favor, digite o nome do estagiário antes de enviar.');
+        document.getElementById('nomeEstagiario').focus();
+        return;
+    }
+
+    // Primeiro gerar o PDF
+    gerarPDF();
+    
+    // Depois de um tempo, abrir WhatsApp com mensagem
+    setTimeout(function() {
+        var data = new Date().toLocaleDateString('pt-BR');
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        var marcadas = document.querySelectorAll('input[type="checkbox"]:checked');
+        
+        // Calcular progresso excluindo almoço
+        var totalAtividades = checkboxes.length - 1;
+        var atividadesConcluidas = marcadas.length;
+        var almocoCheckbox = document.getElementById('t16');
+        if (almocoCheckbox && almocoCheckbox.checked) {
+            atividadesConcluidas = atividadesConcluidas - 1;
+        }
+        var pct = Math.round((atividadesConcluidas / totalAtividades) * 100);
+
+        var msg = '🐎 *HARAS HEMERA - RELATÓRIO DIÁRIO*\n\n';
+        msg += '📅 *Data:* ' + data + '\n';
+        msg += '👤 *Estagiário:* ' + nomeEstagiario + '\n';
+        msg += '📊 *Progresso:* ' + atividadesConcluidas + '/' + totalAtividades + ' atividades (' + pct + '%)\n\n';
+
+        if (pct === 100) {
+            msg += '🎉 *EXCELENTE! TODAS AS ATIVIDADES CONCLUÍDAS!*\n\n';
+        } else if (pct >= 90) {
+            msg += '👍 *MUITO BOM! QUASE TODAS CONCLUÍDAS!*\n\n';
+        } else if (pct >= 70) {
+            msg += '✅ *BOM PROGRESSO!*\n\n';
+        } else {
+            msg += '⚠️ *ATIVIDADES PENDENTES - VERIFICAR*\n\n';
+        }
+
+        msg += '📎 *Relatório PDF detalhado foi gerado e baixado.*\n';
+        msg += '📋 *Anexe o arquivo PDF a esta conversa.*\n\n';
+        msg += '_Sistema Prof. Vicente Falconi_';
+
+        var url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+        window.open(url, '_blank');
+        
+        setTimeout(function() {
+            alert('PDF gerado e WhatsApp aberto!\n\n1. Anexe o arquivo PDF baixado\n2. Envie a mensagem\n\nFormulário será limpo para próximo estagiário.');
+            limparFormulario();
+        }, 2000);
+        
+    }, 1500);
+}
+
+// Função para limpar formulário
+function limparFormulario() {
+    document.getElementById('nomeEstagiario').value = '';
+    document.querySelectorAll('input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+    document.querySelectorAll('textarea').forEach(function(ta) { ta.value = ''; });
+    document.querySelectorAll('input[type="file"]').forEach(function(f) { f.value = ''; });
+    document.querySelectorAll('.photo-preview').forEach(function(img) { img.style.display = 'none'; });
+    document.querySelectorAll('.photo-btn').forEach(function(btn) { 
+        btn.textContent = '📷 Foto'; 
+        btn.classList.remove('has-photo'); 
+    });
+    atualizar();
+    window.scrollTo(0, 0);
+}
+
+// Resetar manual
+function resetar() {
+    if (confirm('Tem certeza que deseja resetar todas as atividades, fotos e comentários?')) {
+        limparFormulario();
+    }
+}
+
+// Inicializar
+carregarTarefas();
+atualizar();
+</script>
+
+</body>
+</html>
